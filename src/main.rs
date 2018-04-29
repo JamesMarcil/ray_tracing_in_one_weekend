@@ -29,7 +29,7 @@ fn main() {
             let u = i as f32 / nx as f32;
             let v = j as f32 / ny as f32;
 
-            let r = Ray::make(origin, lower_left_corner + horizontal * u + vertical * v);
+            let r = Ray::new(origin, lower_left_corner + horizontal * u + vertical * v);
 
             let color = get_color(r);
 
