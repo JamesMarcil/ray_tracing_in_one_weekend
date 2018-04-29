@@ -1,5 +1,6 @@
 extern crate rand;
 
+mod math;
 mod camera;
 mod vec3;
 mod ray;
@@ -19,8 +20,9 @@ use sphere::Sphere;
 fn get_color(r: Ray, hitable: &Hitable) -> Vec3 {
     let mut hit_record = HitRecord::new();
 
-    if hitable.hit(&r, 0.0, std::f32::MAX, &mut hit_record) {
-        return (Vec3::new(1.0, 1.0, 1.0) + hit_record.normal) * 0.5;
+    if hitable.hit(&r, 0.001, std::f32::MAX, &mut hit_record) {
+        let target = hit_record.point + hit_record.normal + math::random_in_unit_sphere();
+        return get_color(Ray::new(hit_record.point, target - hit_record.point), hitable) * 0.5;
     } else {
         let unit_direction = r.direction().unit();
         let t = 0.5 * (unit_direction.y() + 1.0);
@@ -65,6 +67,9 @@ fn main() {
             }
 
             color /= num_samples as f32;
+
+            // Appromixate gamma correction
+            color = Vec3::new(f32::sqrt(color.r()), f32::sqrt(color.g()), f32::sqrt(color.b()));
 
             let ir = (255.99 * color.r()) as u8;
             let ig = (255.99 * color.g()) as u8;
