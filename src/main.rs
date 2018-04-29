@@ -22,7 +22,7 @@ fn main() {
     let lower_left_corner = Vec3::make(-2.0, -1.0, -1.0);
     let horizontal = Vec3::make(4.0, 0.0, 0.0);
     let vertical = Vec3::make(0.0, 2.0, 0.0);
-    let origin = Vec3::new();
+    let origin = Vec3::zero();
 
     for j in (0..ny).rev() {
         for i in 0..nx {

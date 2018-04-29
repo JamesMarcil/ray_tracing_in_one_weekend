@@ -8,7 +8,7 @@ pub struct Vec3 {
 }
 
 impl Vec3 {
-    pub fn new() -> Vec3 {
+    pub fn zero() -> Vec3 {
         Vec3::make(0.0, 0.0, 0.0)
     }
 

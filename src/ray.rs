@@ -8,7 +8,7 @@ pub struct Ray {
 
 impl Ray {
     pub fn new() -> Ray {
-        Ray::make(Vec3::new(), Vec3::new())
+        Ray::make(Vec3::zero(), Vec3::zero())
     }
 
     pub fn make(origin: Vec3, direction: Vec3) -> Ray {
