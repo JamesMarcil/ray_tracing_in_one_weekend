@@ -8,7 +8,7 @@ fn get_color(r:Ray) -> Vec3 {
     let unit_direction = r.direction().unit();
     let t = 0.5 * (unit_direction.y() + 1.0);
 
-    Vec3::make(1.0, 1.0, 1.0) * (1.0 - t) + Vec3::make(0.5, 0.7, 1.0) * t
+    Vec3::new(1.0, 1.0, 1.0) * (1.0 - t) + Vec3::new(0.5, 0.7, 1.0) * t
 }
 
 fn main() {
@@ -19,9 +19,9 @@ fn main() {
     println!("{} {}", nx, ny);
     println!("255");
 
-    let lower_left_corner = Vec3::make(-2.0, -1.0, -1.0);
-    let horizontal = Vec3::make(4.0, 0.0, 0.0);
-    let vertical = Vec3::make(0.0, 2.0, 0.0);
+    let lower_left_corner = Vec3::new(-2.0, -1.0, -1.0);
+    let horizontal = Vec3::new(4.0, 0.0, 0.0);
+    let vertical = Vec3::new(0.0, 2.0, 0.0);
     let origin = Vec3::zero();
 
     for j in (0..ny).rev() {

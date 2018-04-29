@@ -9,10 +9,10 @@ pub struct Vec3 {
 
 impl Vec3 {
     pub fn zero() -> Vec3 {
-        Vec3::make(0.0, 0.0, 0.0)
+        Vec3::new(0.0, 0.0, 0.0)
     }
 
-    pub fn make(x: f32, y: f32, z: f32) -> Vec3 {
+    pub fn new(x: f32, y: f32, z: f32) -> Vec3 {
         Vec3 { x, y, z }
     }
 
