@@ -1,3 +1,6 @@
+extern crate rand;
+
+mod camera;
 mod vec3;
 mod ray;
 mod hitable;
@@ -5,6 +8,7 @@ mod hit_record;
 mod hitable_list;
 mod sphere;
 
+use camera::Camera;
 use vec3::Vec3;
 use ray::Ray;
 use hitable::Hitable;
@@ -27,34 +31,40 @@ fn get_color(r: Ray, hitable: &Hitable) -> Vec3 {
 fn main() {
     let nx: i32 = 200;
     let ny: i32 = 100;
+    let num_samples: i32 = 100;
 
     println!("P3");
     println!("{} {}", nx, ny);
     println!("255");
 
-    let lower_left_corner = Vec3::new(-2.0, -1.0, -1.0);
-    let horizontal = Vec3::new(4.0, 0.0, 0.0);
-    let vertical = Vec3::new(0.0, 2.0, 0.0);
-    let origin = Vec3::zero();
+    let camera = Camera::new(
+        Vec3::new(-2.0, -1.0, -1.0),
+        Vec3::new(4.0, 0.0, 0.0),
+        Vec3::new(0.0, 2.0, 0.0),
+        Vec3::zero(),
+    );
 
     let sphere_one = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5);
     let sphere_two = Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0);
 
-    let elements = vec![
-        &sphere_one as &Hitable,
-        &sphere_two as &Hitable,
-    ];
+    let elements = vec![&sphere_one as &Hitable, &sphere_two as &Hitable];
 
     let world = HitableList::new(elements);
 
     for j in (0..ny).rev() {
         for i in 0..nx {
-            let u = i as f32 / nx as f32;
-            let v = j as f32 / ny as f32;
+            let mut color = Vec3::zero();
 
-            let r = Ray::new(origin, lower_left_corner + horizontal * u + vertical * v);
+            for _ in 0..num_samples {
+                let u = (i as f32 + rand::random::<f32>()) / nx as f32;
+                let v = (j as f32 + rand::random::<f32>())  / ny as f32;
 
-            let color = get_color(r, &world);
+                let r = camera.get_ray(u, v);
+
+                color += get_color(r, &world);
+            }
+
+            color /= num_samples as f32;
 
             let ir = (255.99 * color.r()) as u8;
             let ig = (255.99 * color.g()) as u8;
