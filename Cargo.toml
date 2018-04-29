@@ -1,0 +1,6 @@
+[package]
+name = "ray_tracing_in_one_weekend"
+version = "0.1.0"
+authors = ["James Marcil <james@jamesmarcil.com>"]
+
+[dependencies]
