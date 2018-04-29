@@ -4,7 +4,25 @@ mod ray;
 use vec3::Vec3;
 use ray::Ray;
 
+fn did_hit_sphere(center:Vec3, radius:f32, r:Ray) -> bool {
+    let oc = r.origin() - center;
+
+    let direction = r.direction();
+
+    let a = Vec3::dot(&direction, &direction);
+    let b = 2.0 * Vec3::dot(&oc, &direction);
+    let c = Vec3::dot(&oc, &oc) - radius * radius;
+
+    let discriminant = b * b - 4.0 * a * c;
+
+    (discriminant > 0.0)
+}
+
 fn get_color(r:Ray) -> Vec3 {
+    if did_hit_sphere(Vec3::new(0.0, 0.0, -1.0), 0.5, r) {
+        return Vec3::new(1.0, 0.0, 0.0);
+    }
+
     let unit_direction = r.direction().unit();
     let t = 0.5 * (unit_direction.y() + 1.0);
 
