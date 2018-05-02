@@ -24,7 +24,7 @@ impl Sphere {
 }
 
 impl Hitable for Sphere {
-    fn hit(&self, r: &Ray, t_min: f32, t_max: f32, hit_record: &mut HitRecord) -> bool {
+    fn hit(&self, r: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         let oc = r.origin() - self.center;
 
         let direction = r.direction();
@@ -38,21 +38,23 @@ impl Hitable for Sphere {
         if discriminant > 0.0 {
             let root_one = (-b - f32::sqrt(b * b - a * c)) / a;
             if root_one < t_max && root_one > t_min {
+                let mut hit_record = HitRecord::new();
                 hit_record.t = root_one;
                 hit_record.point = r.point_at_parameter(root_one);
                 hit_record.normal = (hit_record.point - self.center) / self.radius;
-                return true;
+                return Some(hit_record);
             }
 
             let root_two = (-b + f32::sqrt(b * b - a * c)) / a;
             if root_two < t_max && root_two > t_min {
+                let mut hit_record = HitRecord::new();
                 hit_record.t = root_two;
                 hit_record.point = r.point_at_parameter(root_two);
                 hit_record.normal = (hit_record.point - self.center) / self.radius;
-                return true;
+                return Some(hit_record);
             }
         }
 
-        false
+        None
     }
 }
