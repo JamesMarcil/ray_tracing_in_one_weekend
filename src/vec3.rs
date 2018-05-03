@@ -41,7 +41,7 @@ impl Vec3 {
     }
 
     pub fn squared_length(&self) -> f32 {
-        Vec3::dot(self, self)
+        Vec3::dot(*self, *self)
     }
 
     pub fn length(&self) -> f32 {
@@ -64,16 +64,20 @@ impl Vec3 {
         self.z /= length;
     }
 
-    pub fn dot(v1: &Vec3, v2: &Vec3) -> f32 {
+    pub fn dot(v1: Vec3, v2: Vec3) -> f32 {
         v1.x * v2.x + v1.y * v2.y + v1.z * v2.z
     }
 
-    pub fn cross(v1: &Vec3, v2: &Vec3) -> Vec3 {
+    pub fn cross(v1: Vec3, v2: Vec3) -> Vec3 {
         Vec3 {
             x: v1.y * v2.z - v1.z * v2.y,
             y: v1.z * v2.x - v1.x * v2.z,
             z: v1.x * v2.y - v1.y * v2.x,
         }
+    }
+
+    pub fn reflect(vector: Vec3, normal: Vec3) -> Vec3 {
+        vector - (2.0 * Vec3::dot(vector, normal) * normal)
     }
 }
 
@@ -165,6 +169,18 @@ impl Mul<f32> for Vec3 {
             x: self.x * rhs,
             y: self.y * rhs,
             z: self.z * rhs,
+        }
+    }
+}
+
+impl Mul<Vec3> for f32 {
+    type Output = Vec3;
+
+    fn mul(self, rhs: Vec3) -> Vec3 {
+        Vec3 {
+            x: self * rhs.x,
+            y: self * rhs.y,
+            z: self * rhs.z,
         }
     }
 }

@@ -8,6 +8,7 @@ mod hitable;
 mod hit_record;
 mod hitable_list;
 mod sphere;
+mod material;
 
 use camera::Camera;
 use vec3::Vec3;
@@ -16,16 +17,22 @@ use hitable::Hitable;
 use hit_record::HitRecord;
 use hitable_list::HitableList;
 use sphere::Sphere;
+use material::{HasMaterial, Lambertian, Material, Metal};
 
-fn get_color(r: Ray, hitable: &Hitable) -> Vec3 {
+fn get_color(r: Ray, hitable: &Hitable, depth: i32) -> Vec3 {
     match hitable.hit(&r, 0.001, std::f32::MAX) {
-        Some(hit_record) => {
-            let target = hit_record.point + hit_record.normal + math::random_in_unit_sphere();
-            return get_color(
-                Ray::new(hit_record.point, target - hit_record.point),
-                hitable,
-            ) * 0.5;
-        }
+        Some(hit_record) => match hit_record.material {
+            Some(material) => {
+                let (did_scatter, attenuation, scattered) = material.scatter(&r, &hit_record);
+                if depth < 50 && did_scatter {
+                    return get_color(scattered, hitable, depth + 1) * attenuation;
+                }
+                return Vec3::zero();
+            }
+            None => {
+                return Vec3::zero();
+            }
+        },
         None => {
             let unit_direction = r.direction().unit();
             let t = 0.5 * (unit_direction.y() + 1.0);
@@ -50,10 +57,21 @@ fn main() {
         Vec3::zero(),
     );
 
-    let sphere_one = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5);
-    let sphere_two = Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0);
+    let material_one = Lambertian::new(Vec3::new(0.8, 0.3, 0.3));
+    let material_two = Lambertian::new(Vec3::new(0.8, 0.8, 0.0));
+    let material_three = Metal::new(Vec3::new(0.8, 0.6, 0.2), 1.0);
+    let material_four = Metal::new(Vec3::new(0.8, 0.8, 0.8), 0.3);
 
-    let elements = vec![&sphere_one as &Hitable, &sphere_two as &Hitable];
+    let sphere_one = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5, &material_one as &Material);
+    let sphere_two = Sphere::new(
+        Vec3::new(0.0, -100.5, -1.0),
+        100.0,
+        &material_two as &Material,
+    );
+    let sphere_three = Sphere::new(Vec3::new(1.0, 0.0, -1.0), 0.5, &material_three as &Material);
+    let sphere_four = Sphere::new(Vec3::new(-1.0, 0.0, -1.0), 0.5, &material_four as &Material);
+
+    let elements = vec![&sphere_one, &sphere_two, &sphere_three, &sphere_four];
 
     let world = HitableList::new(elements);
 
@@ -67,7 +85,7 @@ fn main() {
 
                 let r = camera.get_ray(u, v);
 
-                color += get_color(r, &world);
+                color += get_color(r, &world, 0);
             }
 
             color /= num_samples as f32;
