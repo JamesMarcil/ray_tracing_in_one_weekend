@@ -16,7 +16,7 @@ impl HitRecord {
         }
     }
 
-    pub fn copy_from(&mut self, rhs:HitRecord) {
+    pub fn copy_from(&mut self, rhs: HitRecord) {
         self.point = rhs.point;
         self.normal = rhs.normal;
         self.t = rhs.t;
