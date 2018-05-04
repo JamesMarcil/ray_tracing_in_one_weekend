@@ -17,7 +17,7 @@ use hitable::Hitable;
 use hit_record::HitRecord;
 use hitable_list::HitableList;
 use sphere::Sphere;
-use material::{HasMaterial, Lambertian, Material, Metal};
+use material::{Dielectric, HasMaterial, Lambertian, Material, Metal};
 
 fn get_color(r: Ray, hitable: &Hitable, depth: i32) -> Vec3 {
     match hitable.hit(&r, 0.001, std::f32::MAX) {
@@ -57,10 +57,11 @@ fn main() {
         Vec3::zero(),
     );
 
-    let material_one = Lambertian::new(Vec3::new(0.8, 0.3, 0.3));
+    let material_one = Lambertian::new(Vec3::new(0.1, 0.2, 0.5));
     let material_two = Lambertian::new(Vec3::new(0.8, 0.8, 0.0));
     let material_three = Metal::new(Vec3::new(0.8, 0.6, 0.2), 1.0);
-    let material_four = Metal::new(Vec3::new(0.8, 0.8, 0.8), 0.3);
+    let material_four = Dielectric::new(1.5);
+    let material_five = Dielectric::new(1.5);
 
     let sphere_one = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5, &material_one as &Material);
     let sphere_two = Sphere::new(
@@ -70,8 +71,19 @@ fn main() {
     );
     let sphere_three = Sphere::new(Vec3::new(1.0, 0.0, -1.0), 0.5, &material_three as &Material);
     let sphere_four = Sphere::new(Vec3::new(-1.0, 0.0, -1.0), 0.5, &material_four as &Material);
+    let sphere_five = Sphere::new(
+        Vec3::new(-1.0, 0.0, -1.0),
+        -0.45,
+        &material_five as &Material,
+    );
 
-    let elements = vec![&sphere_one, &sphere_two, &sphere_three, &sphere_four];
+    let elements = vec![
+        &sphere_one,
+        &sphere_two,
+        &sphere_three,
+        &sphere_four,
+        &sphere_five,
+    ];
 
     let world = HitableList::new(elements);
 

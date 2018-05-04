@@ -19,3 +19,11 @@ pub fn random_in_unit_sphere() -> Vec3 {
 
     point
 }
+
+pub fn shlick(cosine: f32, ref_idx: f32) -> f32 {
+    let mut r0 = (1.0 - ref_idx) / (1.0 + ref_idx);
+
+    r0 = r0 * r0;
+
+    r0 + (1.0 - r0) * f32::powf(1.0 - cosine, 5.0)
+}
