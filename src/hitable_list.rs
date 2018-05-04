@@ -3,20 +3,20 @@ use hit_record::HitRecord;
 use hitable::Hitable;
 use material::{HasMaterial, Material};
 
-pub struct HitableList<'s, T: 's> {
-    elements: Vec<&'s T>,
+pub struct HitableList<T> {
+    elements: Vec<Box<T>>,
 }
 
-impl<'s, T> HitableList<'s, T>
+impl<T> HitableList<T>
 where
     T: Hitable + HasMaterial,
 {
-    pub fn new(elements: Vec<&'s T>) -> HitableList<T> {
+    pub fn new(elements: Vec<Box<T>>) -> HitableList<T> {
         HitableList { elements }
     }
 }
 
-impl<'s, T> Hitable for HitableList<'s, T>
+impl<T> Hitable for HitableList<T>
 where
     T: Hitable + HasMaterial,
 {

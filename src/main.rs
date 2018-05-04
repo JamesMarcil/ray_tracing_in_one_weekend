@@ -78,11 +78,11 @@ fn main() {
     );
 
     let elements = vec![
-        &sphere_one,
-        &sphere_two,
-        &sphere_three,
-        &sphere_four,
-        &sphere_five,
+        Box::new(sphere_one),
+        Box::new(sphere_two),
+        Box::new(sphere_three),
+        Box::new(sphere_four),
+        Box::new(sphere_five),
     ];
 
     let world = HitableList::new(elements);
