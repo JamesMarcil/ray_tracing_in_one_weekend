@@ -46,13 +46,6 @@ fn get_color(r: Ray, hitable: &Hitable, depth: i32) -> Vec3 {
 }
 
 fn main() {
-    let camera = Camera::new(
-        Vec3::new(-2.0, -1.0, -1.0),
-        Vec3::new(4.0, 0.0, 0.0),
-        Vec3::new(0.0, 2.0, 0.0),
-        Vec3::zero(),
-    );
-
     let material_one = Lambertian::new(Vec3::new(0.1, 0.2, 0.5));
     let material_two = Lambertian::new(Vec3::new(0.8, 0.8, 0.0));
     let material_three = Metal::new(Vec3::new(0.8, 0.6, 0.2), 1.0);
@@ -76,8 +69,10 @@ fn main() {
     let world = HitableList::new(elements);
 
     let nx = 1600;
-    let ny = 800;
-    let num_samples = 100;
+    let ny = 900;
+    let num_samples = 25;
+
+    let camera = Camera::new(Vec3::new(-2.0, 2.0, 1.0), Vec3::new(0.0, 0.0, -1.0), Vec3::new(0.0, 1.0, 0.0), 90.0, nx as f32 / ny as f32);
 
     let mut pixels = vec![[0, 0, 0]; nx * ny];
 
