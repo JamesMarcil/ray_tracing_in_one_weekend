@@ -58,7 +58,7 @@ fn main() {
     let sphere_four = Sphere::new(Vec3::new(-1.0, 0.0, -1.0), 0.5, Box::new(material_four));
     let sphere_five = Sphere::new(Vec3::new(-1.0, 0.0, -1.0), -0.45, Box::new(material_five));
 
-    let elements:Vec<Box<Hitable + Sync>> = vec![
+    let elements: Vec<Box<Hitable + Sync>> = vec![
         Box::new(sphere_one),
         Box::new(sphere_two),
         Box::new(sphere_three),
@@ -72,7 +72,22 @@ fn main() {
     let ny = 900;
     let num_samples = 25;
 
-    let camera = Camera::new(Vec3::new(-2.0, 2.0, 1.0), Vec3::new(0.0, 0.0, -1.0), Vec3::new(0.0, 1.0, 0.0), 90.0, nx as f32 / ny as f32);
+    let look_from = Vec3::new(3.0, 3.0, 2.0);
+    let look_at = Vec3::new(0.0, 0.0, -1.0);
+    let up = Vec3::new(0.0, 1.0, 0.0);
+    let vertical_fov = 20.0;
+    let aspect_ratio = nx as f32 / ny as f32;
+    let focus_distance = (look_from - look_at).length();
+    let aperture = 2.0;
+    let camera = Camera::new(
+        look_from,
+        look_at,
+        up,
+        vertical_fov,
+        aspect_ratio,
+        aperture,
+        focus_distance,
+    );
 
     let mut pixels = vec![[0, 0, 0]; nx * ny];
 

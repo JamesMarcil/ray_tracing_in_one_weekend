@@ -16,6 +16,20 @@ pub fn random_in_unit_sphere() -> Vec3 {
     point
 }
 
+pub fn random_in_unit_disk() -> Vec3 {
+    let mut point = Vec3::zero();
+
+    loop {
+        point = Vec3::new(random::<f32>(), random::<f32>(), 0.0) * 2.0 - Vec3::new(1.0, 1.0, 0.0);
+
+        if point.squared_length() < 1.0 {
+            break;
+        }
+    }
+
+    point
+}
+
 pub fn shlick(cosine: f32, ref_idx: f32) -> f32 {
     let mut r0 = (1.0 - ref_idx) / (1.0 + ref_idx);
 
