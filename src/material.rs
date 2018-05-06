@@ -8,10 +8,6 @@ pub trait Material {
     fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> (bool, Vec3, Ray);
 }
 
-pub trait HasMaterial {
-    fn material<'material>(&'material self) -> &'material Material;
-}
-
 pub struct Lambertian {
     albedo: Vec3,
 }

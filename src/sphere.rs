@@ -2,16 +2,16 @@ use vec3::Vec3;
 use ray::Ray;
 use hitable::Hitable;
 use hit_record::HitRecord;
-use material::{HasMaterial, Material};
+use material::Material;
 
-pub struct Sphere<'material> {
+pub struct Sphere {
     center: Vec3,
     radius: f32,
-    material: &'material Material,
+    material: Box<Material + Sync>,
 }
 
-impl<'material> Sphere<'material> {
-    pub fn new(center: Vec3, radius: f32, material: &'material Material) -> Sphere {
+impl Sphere {
+    pub fn new(center: Vec3, radius: f32, material: Box<Material + Sync>) -> Sphere {
         Sphere {
             center,
             radius,
@@ -28,7 +28,7 @@ impl<'material> Sphere<'material> {
     }
 }
 
-impl<'material> Hitable for Sphere<'material> {
+impl Hitable for Sphere {
     fn hit(&self, r: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         let oc = r.origin() - self.center;
 
@@ -47,7 +47,7 @@ impl<'material> Hitable for Sphere<'material> {
                 hit_record.t = root_one;
                 hit_record.point = r.point_at_parameter(root_one);
                 hit_record.normal = (hit_record.point - self.center) / self.radius;
-                hit_record.material = Some(self.material);
+                hit_record.material = Some(&*self.material);
                 return Some(hit_record);
             }
 
@@ -57,17 +57,11 @@ impl<'material> Hitable for Sphere<'material> {
                 hit_record.t = root_two;
                 hit_record.point = r.point_at_parameter(root_two);
                 hit_record.normal = (hit_record.point - self.center) / self.radius;
-                hit_record.material = Some(self.material);
+                hit_record.material = Some(&*self.material);
                 return Some(hit_record);
             }
         }
 
         None
-    }
-}
-
-impl<'material> HasMaterial for Sphere<'material> {
-    fn material<'s>(&'s self) -> &'s Material {
-        self.material
     }
 }

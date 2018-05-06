@@ -1,25 +1,19 @@
 use ray::Ray;
 use hit_record::HitRecord;
 use hitable::Hitable;
-use material::{HasMaterial, Material};
+use material::Material;
 
-pub struct HitableList<T> {
-    elements: Vec<Box<T>>,
+pub struct HitableList {
+    elements: Vec<Box<Hitable + Sync>>,
 }
 
-impl<T> HitableList<T>
-where
-    T: Hitable + HasMaterial,
-{
-    pub fn new(elements: Vec<Box<T>>) -> HitableList<T> {
+impl HitableList {
+    pub fn new(elements: Vec<Box<Hitable + Sync>>) -> HitableList {
         HitableList { elements }
     }
 }
 
-impl<T> Hitable for HitableList<T>
-where
-    T: Hitable + HasMaterial,
-{
+impl Hitable for HitableList {
     fn hit(&self, r: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         let mut result = None;
         let mut closest_so_far = t_max;

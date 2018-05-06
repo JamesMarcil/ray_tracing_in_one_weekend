@@ -1,5 +1,6 @@
 extern crate image;
 extern crate rand;
+extern crate rayon;
 
 mod math;
 mod camera;
@@ -18,8 +19,9 @@ use hitable::Hitable;
 use hit_record::HitRecord;
 use hitable_list::HitableList;
 use sphere::Sphere;
-use material::{Dielectric, HasMaterial, Lambertian, Material, Metal};
+use material::{Dielectric, Lambertian, Material, Metal};
 use std::fs::File;
+use rayon::prelude::*;
 
 fn get_color(r: Ray, hitable: &Hitable, depth: i32) -> Vec3 {
     match hitable.hit(&r, 0.001, std::f32::MAX) {
@@ -57,21 +59,13 @@ fn main() {
     let material_four = Dielectric::new(1.5);
     let material_five = Dielectric::new(1.5);
 
-    let sphere_one = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5, &material_one as &Material);
-    let sphere_two = Sphere::new(
-        Vec3::new(0.0, -100.5, -1.0),
-        100.0,
-        &material_two as &Material,
-    );
-    let sphere_three = Sphere::new(Vec3::new(1.0, 0.0, -1.0), 0.5, &material_three as &Material);
-    let sphere_four = Sphere::new(Vec3::new(-1.0, 0.0, -1.0), 0.5, &material_four as &Material);
-    let sphere_five = Sphere::new(
-        Vec3::new(-1.0, 0.0, -1.0),
-        -0.45,
-        &material_five as &Material,
-    );
+    let sphere_one = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5, Box::new(material_one));
+    let sphere_two = Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0, Box::new(material_two));
+    let sphere_three = Sphere::new(Vec3::new(1.0, 0.0, -1.0), 0.5, Box::new(material_three));
+    let sphere_four = Sphere::new(Vec3::new(-1.0, 0.0, -1.0), 0.5, Box::new(material_four));
+    let sphere_five = Sphere::new(Vec3::new(-1.0, 0.0, -1.0), -0.45, Box::new(material_five));
 
-    let elements = vec![
+    let elements:Vec<Box<Hitable + Sync>> = vec![
         Box::new(sphere_one),
         Box::new(sphere_two),
         Box::new(sphere_three),
@@ -81,21 +75,21 @@ fn main() {
 
     let world = HitableList::new(elements);
 
-    let nx: u32 = 800;
-    let ny: u32 = 400;
-    let num_samples: i32 = 100;
+    let nx = 1600;
+    let ny = 800;
+    let num_samples = 100;
 
-    let mut image_buffer = image::ImageBuffer::new(nx, ny);
+    let mut pixels = vec![[0, 0, 0]; nx * ny];
 
-    for (x, y, pixel) in image_buffer.enumerate_pixels_mut() {
+    pixels.par_iter_mut().enumerate().for_each(|(i, value)| {
         let mut color = Vec3::zero();
 
-        let i = x;
-        let j = (ny - y);
+        let x = i % nx;
+        let y = ny - (i / nx);
 
         for _ in 0..num_samples {
-            let u = (i as f32 + rand::random::<f32>()) / nx as f32;
-            let v = (j as f32 + rand::random::<f32>()) / ny as f32;
+            let u = (x as f32 + rand::random::<f32>()) / nx as f32;
+            let v = (y as f32 + rand::random::<f32>()) / ny as f32;
 
             let r = camera.get_ray(u, v);
 
@@ -115,8 +109,18 @@ fn main() {
         let ig = (255.99 * color.g()) as u8;
         let ib = (255.99 * color.b()) as u8;
 
-        *pixel = image::Rgb([ir, ig, ib]);
-    }
+        *value = [ir, ig, ib];
+    });
+
+    let result = pixels.iter().fold(Vec::new(), |mut array, value| {
+        array.push(value[0]);
+        array.push(value[1]);
+        array.push(value[2]);
+        array
+    });
+
+    let image_buffer = image::ImageBuffer::from_raw(nx as u32, ny as u32, result)
+        .expect("Failed to create buffer!");
 
     image::ImageRgb8(image_buffer)
         .save("out.png")
