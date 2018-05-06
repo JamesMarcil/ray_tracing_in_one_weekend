@@ -1,9 +1,8 @@
-extern crate rand;
-
 use ray::Ray;
 use math::{random_in_unit_sphere, shlick};
 use vec3::Vec3;
 use hit_record::HitRecord;
+use rand::random;
 
 pub trait Material {
     fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> (bool, Vec3, Ray);
@@ -97,7 +96,7 @@ impl Material for Dielectric {
 
         match Vec3::refract(ray_in.direction(), outward_normal, ni_over_nt) {
             Some(refracted) => {
-                let random_value = rand::random::<f32>();
+                let random_value = random::<f32>();
                 let reflect_probability = shlick(cosine, self.ref_idx);
 
                 if random_value < reflect_probability {
