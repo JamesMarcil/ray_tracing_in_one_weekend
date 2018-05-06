@@ -1,3 +1,4 @@
+extern crate image;
 extern crate rand;
 
 mod math;
@@ -18,6 +19,7 @@ use hit_record::HitRecord;
 use hitable_list::HitableList;
 use sphere::Sphere;
 use material::{Dielectric, HasMaterial, Lambertian, Material, Metal};
+use std::fs::File;
 
 fn get_color(r: Ray, hitable: &Hitable, depth: i32) -> Vec3 {
     match hitable.hit(&r, 0.001, std::f32::MAX) {
@@ -42,14 +44,6 @@ fn get_color(r: Ray, hitable: &Hitable, depth: i32) -> Vec3 {
 }
 
 fn main() {
-    let nx: i32 = 200;
-    let ny: i32 = 100;
-    let num_samples: i32 = 100;
-
-    println!("P3");
-    println!("{} {}", nx, ny);
-    println!("255");
-
     let camera = Camera::new(
         Vec3::new(-2.0, -1.0, -1.0),
         Vec3::new(4.0, 0.0, 0.0),
@@ -87,32 +81,44 @@ fn main() {
 
     let world = HitableList::new(elements);
 
-    for j in (0..ny).rev() {
-        for i in 0..nx {
-            let mut color = Vec3::zero();
+    let nx: u32 = 800;
+    let ny: u32 = 400;
+    let num_samples: i32 = 100;
 
-            for _ in 0..num_samples {
-                let u = (i as f32 + rand::random::<f32>()) / nx as f32;
-                let v = (j as f32 + rand::random::<f32>()) / ny as f32;
+    let mut image_buffer = image::ImageBuffer::new(nx, ny);
 
-                let r = camera.get_ray(u, v);
+    for (x, y, pixel) in image_buffer.enumerate_pixels_mut() {
+        let mut color = Vec3::zero();
 
-                color += get_color(r, &world, 0);
-            }
+        let i = x;
+        let j = (ny - y);
 
-            color /= num_samples as f32;
+        for _ in 0..num_samples {
+            let u = (i as f32 + rand::random::<f32>()) / nx as f32;
+            let v = (j as f32 + rand::random::<f32>()) / ny as f32;
 
-            // Appromixate gamma correction
-            color = Vec3::new(
-                f32::sqrt(color.r()),
-                f32::sqrt(color.g()),
-                f32::sqrt(color.b()),
-            );
+            let r = camera.get_ray(u, v);
 
-            let ir = (255.99 * color.r()) as u8;
-            let ig = (255.99 * color.g()) as u8;
-            let ib = (255.99 * color.b()) as u8;
-            println!("{} {} {}", ir, ig, ib);
+            color += get_color(r, &world, 0);
         }
+
+        color /= num_samples as f32;
+
+        // Appromixate gamma correction
+        color = Vec3::new(
+            f32::sqrt(color.r()),
+            f32::sqrt(color.g()),
+            f32::sqrt(color.b()),
+        );
+
+        let ir = (255.99 * color.r()) as u8;
+        let ig = (255.99 * color.g()) as u8;
+        let ib = (255.99 * color.b()) as u8;
+
+        *pixel = image::Rgb([ir, ig, ib]);
     }
+
+    image::ImageRgb8(image_buffer)
+        .save("out.png")
+        .expect("Failed to write file!");
 }
