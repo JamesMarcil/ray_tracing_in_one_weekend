@@ -1,7 +1,6 @@
 use ray::Ray;
 use hit_record::HitRecord;
 use hitable::Hitable;
-use material::Material;
 
 pub struct HitableList {
     elements: Vec<Box<Hitable + Sync>>,

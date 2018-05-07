@@ -16,11 +16,9 @@ use camera::Camera;
 use vec3::Vec3;
 use ray::Ray;
 use hitable::Hitable;
-use hit_record::HitRecord;
 use hitable_list::HitableList;
 use sphere::Sphere;
-use material::{Dielectric, Lambertian, Material, Metal};
-use std::fs::File;
+use material::{Dielectric, Lambertian, Metal};
 use rayon::prelude::*;
 
 fn get_color(r: Ray, hitable: &Hitable, depth: i32) -> Vec3 {
