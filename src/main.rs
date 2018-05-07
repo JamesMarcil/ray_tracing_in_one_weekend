@@ -46,39 +46,91 @@ fn get_color(r: Ray, hitable: &Hitable, depth: i32) -> Vec3 {
 }
 
 fn main() {
-    let material_one = Lambertian::new(Vec3::new(0.1, 0.2, 0.5));
-    let material_two = Lambertian::new(Vec3::new(0.8, 0.8, 0.0));
-    let material_three = Metal::new(Vec3::new(0.8, 0.6, 0.2), 1.0);
-    let material_four = Dielectric::new(1.5);
-    let material_five = Dielectric::new(1.5);
+    let mut elements: Vec<Box<Hitable + Sync>> = vec![];
 
-    let sphere_one = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5, Box::new(material_one));
-    let sphere_two = Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0, Box::new(material_two));
-    let sphere_three = Sphere::new(Vec3::new(1.0, 0.0, -1.0), 0.5, Box::new(material_three));
-    let sphere_four = Sphere::new(Vec3::new(-1.0, 0.0, -1.0), 0.5, Box::new(material_four));
-    let sphere_five = Sphere::new(Vec3::new(-1.0, 0.0, -1.0), -0.45, Box::new(material_five));
+    let material_one = Box::new(Lambertian::new(Vec3::new(0.5, 0.5, 0.5)));
 
-    let elements: Vec<Box<Hitable + Sync>> = vec![
-        Box::new(sphere_one),
-        Box::new(sphere_two),
-        Box::new(sphere_three),
-        Box::new(sphere_four),
-        Box::new(sphere_five),
-    ];
+    let sphere_one = Box::new(Sphere::new(
+        Vec3::new(0.0, -1000.0, 0.0),
+        1000.0,
+        material_one,
+    ));
+
+    elements.push(sphere_one);
+
+    for a in -11..11 {
+        for b in -11..11 {
+            let material_probability = rand::random::<f32>();
+
+            let center = Vec3::new(
+                a as f32 + 0.9 * rand::random::<f32>(),
+                0.2,
+                b as f32 + 0.9 * rand::random::<f32>(),
+            );
+
+            if (center - Vec3::new(4.0, 0.2, 0.0)).length() > 0.9 {
+                // Diffuse
+                if material_probability < 0.8 {
+                    let material = Box::new(Lambertian::new(Vec3::new(
+                        rand::random::<f32>() * rand::random::<f32>(),
+                        rand::random::<f32>() * rand::random::<f32>(),
+                        rand::random::<f32>() * rand::random::<f32>(),
+                    )));
+
+                    let sphere = Box::new(Sphere::new(center, 0.2, material));
+
+                    elements.push(sphere);
+                // Metal
+                } else if material_probability < 0.95 {
+                    let material = Box::new(Metal::new(
+                        Vec3::new(
+                            0.5 * (1.0 + rand::random::<f32>()),
+                            0.5 * (1.0 + rand::random::<f32>()),
+                            0.5 * (1.0 + rand::random::<f32>()),
+                        ),
+                        0.5 * rand::random::<f32>(),
+                    ));
+
+                    let sphere = Box::new(Sphere::new(center, 0.2, material));
+
+                    elements.push(sphere);
+                // Glass
+                } else {
+                    let material = Box::new(Dielectric::new(1.5));
+
+                    let sphere = Box::new(Sphere::new(center, 0.2, material));
+
+                    elements.push(sphere);
+                }
+            }
+        }
+    }
+
+    let material_two = Box::new(Dielectric::new(1.5));
+    let sphere_two = Box::new(Sphere::new(Vec3::new(0.0, 1.0, 0.0), 1.0, material_two));
+    elements.push(sphere_two);
+
+    let material_three = Box::new(Lambertian::new(Vec3::new(0.4, 0.2, 0.1)));
+    let sphere_three = Box::new(Sphere::new(Vec3::new(-4.0, 1.0, 0.0), 1.0, material_three));
+    elements.push(sphere_three);
+
+    let material_four = Box::new(Metal::new(Vec3::new(0.7, 0.6, 0.5), 0.0));
+    let sphere_four = Box::new(Sphere::new(Vec3::new(4.0, 1.0, 0.0), 1.0, material_four));
+    elements.push(sphere_four);
 
     let world = HitableList::new(elements);
 
     let nx = 1600;
     let ny = 900;
-    let num_samples = 25;
+    let num_samples = 10;
 
-    let look_from = Vec3::new(3.0, 3.0, 2.0);
-    let look_at = Vec3::new(0.0, 0.0, -1.0);
+    let look_from = Vec3::new(13.0, 2.0, 3.0);
+    let look_at = Vec3::new(0.0, 0.0, 0.0);
     let up = Vec3::new(0.0, 1.0, 0.0);
     let vertical_fov = 20.0;
     let aspect_ratio = nx as f32 / ny as f32;
-    let focus_distance = (look_from - look_at).length();
-    let aperture = 2.0;
+    let focus_distance = 10.0;
+    let aperture = 0.1;
     let camera = Camera::new(
         look_from,
         look_at,
