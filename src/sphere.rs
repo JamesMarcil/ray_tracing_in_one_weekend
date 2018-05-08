@@ -43,21 +43,21 @@ impl Hitable for Sphere {
         if discriminant > 0.0 {
             let root_one = (-b - f32::sqrt(b * b - a * c)) / a;
             if root_one < t_max && root_one > t_min {
-                let mut hit_record = HitRecord::new();
-                hit_record.t = root_one;
-                hit_record.point = r.point_at_parameter(root_one);
-                hit_record.normal = (hit_record.point - self.center) / self.radius;
-                hit_record.material = Some(&*self.material);
+                let point = r.point_at_parameter(root_one);
+                let normal = (point - self.center) / self.radius;
+                let t = root_one;
+                let material = &*self.material;
+                let hit_record = HitRecord::new(point, normal, t, material);
                 return Some(hit_record);
             }
 
             let root_two = (-b + f32::sqrt(b * b - a * c)) / a;
             if root_two < t_max && root_two > t_min {
-                let mut hit_record = HitRecord::new();
-                hit_record.t = root_two;
-                hit_record.point = r.point_at_parameter(root_two);
-                hit_record.normal = (hit_record.point - self.center) / self.radius;
-                hit_record.material = Some(&*self.material);
+                let point = r.point_at_parameter(root_two);
+                let normal = (point - self.center) / self.radius;
+                let t = root_two;
+                let material = &*self.material;
+                let hit_record = HitRecord::new(point, normal, t, material);
                 return Some(hit_record);
             }
         }

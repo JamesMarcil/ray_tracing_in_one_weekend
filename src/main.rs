@@ -23,18 +23,14 @@ use rayon::prelude::*;
 
 fn get_color(r: Ray, hitable: &Hitable, depth: i32) -> Vec3 {
     match hitable.hit(&r, 0.001, std::f32::MAX) {
-        Some(hit_record) => match hit_record.material {
-            Some(material) => {
-                let (did_scatter, attenuation, scattered) = material.scatter(&r, &hit_record);
-                if depth < 50 && did_scatter {
-                    return get_color(scattered, hitable, depth + 1) * attenuation;
-                }
-                return Vec3::zero();
+        Some(hit_record) => {
+            let (did_scatter, attenuation, scattered) =
+                hit_record.material.scatter(&r, &hit_record);
+            if depth < 50 && did_scatter {
+                return get_color(scattered, hitable, depth + 1) * attenuation;
             }
-            None => {
-                return Vec3::zero();
-            }
-        },
+            return Vec3::zero();
+        }
         None => {
             let unit_direction = r.direction().unit();
             let t = 0.5 * (unit_direction.y() + 1.0);

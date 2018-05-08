@@ -5,16 +5,21 @@ pub struct HitRecord<'material> {
     pub point: Vec3,
     pub normal: Vec3,
     pub t: f32,
-    pub material: Option<&'material Material>,
+    pub material: &'material Material,
 }
 
 impl<'material> HitRecord<'material> {
-    pub fn new() -> HitRecord<'material> {
+    pub fn new(
+        point: Vec3,
+        normal: Vec3,
+        t: f32,
+        material: &'material Material,
+    ) -> HitRecord<'material> {
         HitRecord {
-            point: Vec3::zero(),
-            normal: Vec3::zero(),
-            t: 0.0,
-            material: None,
+            point,
+            normal,
+            t,
+            material,
         }
     }
 }
