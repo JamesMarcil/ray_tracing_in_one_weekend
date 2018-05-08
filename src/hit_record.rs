@@ -17,11 +17,4 @@ impl<'material> HitRecord<'material> {
             material: None,
         }
     }
-
-    pub fn copy_from(&mut self, rhs: HitRecord<'material>) {
-        self.point = rhs.point;
-        self.normal = rhs.normal;
-        self.t = rhs.t;
-        self.material = rhs.material;
-    }
 }
