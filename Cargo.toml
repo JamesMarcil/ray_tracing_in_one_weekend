@@ -7,3 +7,4 @@ authors = ["James Marcil <james@jamesmarcil.com>"]
 rand = "0.4.2"
 image = "0.19.0"
 rayon = "1.0.1"
+clap = "2.31.2"
