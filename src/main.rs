@@ -175,10 +175,6 @@ fn main() {
         array
     });
 
-    let image_buffer = image::ImageBuffer::from_raw(nx as u32, ny as u32, result)
-        .expect("Failed to create buffer!");
-
-    image::ImageRgb8(image_buffer)
-        .save("out.png")
+    image::save_buffer("out.png", &result, nx as u32, ny as u32, image::ColorType::RGB(8))
         .expect("Failed to write file!");
 }
