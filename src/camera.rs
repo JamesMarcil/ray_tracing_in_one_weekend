@@ -49,22 +49,6 @@ impl Camera {
         }
     }
 
-    pub fn lower_left_corner(&self) -> Vec3 {
-        self.lower_left_corner
-    }
-
-    pub fn horizontal(&self) -> Vec3 {
-        self.horizontal
-    }
-
-    pub fn vertical(&self) -> Vec3 {
-        self.vertical
-    }
-
-    pub fn origin(&self) -> Vec3 {
-        self.origin
-    }
-
     pub fn get_ray(&self, u: f32, v: f32) -> Ray {
         let rd = self.lens_radius * random_in_unit_disk();
         let offset = self.u * rd.x() + self.v * rd.y();
