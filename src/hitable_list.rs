@@ -3,11 +3,11 @@ use hit_record::HitRecord;
 use hitable::Hitable;
 
 pub struct HitableList {
-    elements: Vec<Box<Hitable + Sync>>,
+    elements: Vec<Box<Hitable + Send + Sync>>,
 }
 
 impl HitableList {
-    pub fn new(elements: Vec<Box<Hitable + Sync>>) -> HitableList {
+    pub fn new(elements: Vec<Box<Hitable + Send + Sync>>) -> HitableList {
         HitableList { elements }
     }
 }

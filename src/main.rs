@@ -79,8 +79,8 @@ fn main() {
         )
         .get_matches();
 
-    let nx = arguments.value_of("width").unwrap().parse().unwrap_or(200);
-    let ny = arguments.value_of("height").unwrap().parse().unwrap_or(100);
+    let width = arguments.value_of("width").unwrap().parse().unwrap_or(200);
+    let height = arguments.value_of("height").unwrap().parse().unwrap_or(100);
     let num_samples = arguments
         .value_of("num_samples")
         .unwrap()
@@ -88,7 +88,7 @@ fn main() {
         .unwrap_or(10);
     let filename = arguments.value_of("filename").unwrap();
 
-    let mut elements: Vec<Box<Hitable + Sync>> = vec![];
+    let mut elements: Vec<Box<Hitable + Send + Sync>> = vec![];
 
     let material_one = Box::new(Lambertian::new(Vec3::new(0.5, 0.5, 0.5)));
 
@@ -166,7 +166,7 @@ fn main() {
     let look_at = Vec3::new(0.0, 0.0, 0.0);
     let up = Vec3::new(0.0, 1.0, 0.0);
     let vertical_fov = 20.0;
-    let aspect_ratio = nx as f32 / ny as f32;
+    let aspect_ratio = width as f32 / height as f32;
     let focus_distance = 10.0;
     let aperture = 0.1;
     let camera = Camera::new(
@@ -179,37 +179,57 @@ fn main() {
         focus_distance,
     );
 
-    let mut pixels = vec![[0, 0, 0]; nx * ny];
+    let mut pixels = vec![[0, 0, 0]; width * height];
 
-    pixels.par_iter_mut().enumerate().for_each(|(i, value)| {
-        let mut color = Vec3::zero();
+    rayon::scope(|s| {
+        let num_threads = rayon::current_num_threads();
 
-        let x = i % nx;
-        let y = ny - (i / nx);
+        let num_pixels_per_thread = (width * height) / num_threads;
 
-        for _ in 0..num_samples {
-            let u = (x as f32 + rand::random::<f32>()) / nx as f32;
-            let v = (y as f32 + rand::random::<f32>()) / ny as f32;
+        pixels
+            .chunks_mut(num_pixels_per_thread)
+            .enumerate()
+            .for_each(|(chunk_index, chunk)| {
+                let world = &world;
 
-            let r = camera.get_ray(u, v);
+                s.spawn(move |_| {
+                    chunk
+                        .iter_mut()
+                        .enumerate()
+                        .for_each(|(index_within_chunk, value)| {
+                            let mut color = Vec3::zero();
 
-            color += get_color(r, &world, 0);
-        }
+                            let index_within_pixels =
+                                (num_pixels_per_thread * chunk_index) + index_within_chunk;
+                            let x = index_within_pixels % width;
+                            let y = height - (index_within_pixels / width);
 
-        color /= num_samples as f32;
+                            for _ in 0..num_samples {
+                                let u = (x as f32 + rand::random::<f32>()) / width as f32;
+                                let v = (y as f32 + rand::random::<f32>()) / height as f32;
 
-        // Appromixate gamma correction
-        color = Vec3::new(
-            f32::sqrt(color.r()),
-            f32::sqrt(color.g()),
-            f32::sqrt(color.b()),
-        );
+                                let r = camera.get_ray(u, v);
 
-        let ir = (255.99 * color.r()) as u8;
-        let ig = (255.99 * color.g()) as u8;
-        let ib = (255.99 * color.b()) as u8;
+                                color += get_color(r, world as &Hitable, 0);
+                            }
 
-        *value = [ir, ig, ib];
+                            color /= num_samples as f32;
+
+                            // Appromixate gamma correction
+                            color = Vec3::new(
+                                f32::sqrt(color.r()),
+                                f32::sqrt(color.g()),
+                                f32::sqrt(color.b()),
+                            );
+
+                            let ir = (255.99 * color.r()) as u8;
+                            let ig = (255.99 * color.g()) as u8;
+                            let ib = (255.99 * color.b()) as u8;
+
+                            *value = [ir, ig, ib];
+                        });
+                })
+            });
     });
 
     let result = pixels.iter().fold(Vec::new(), |mut array, value| {
@@ -222,8 +242,8 @@ fn main() {
     image::save_buffer(
         filename,
         &result,
-        nx as u32,
-        ny as u32,
+        width as u32,
+        height as u32,
         image::ColorType::RGB(8),
     ).expect("Failed to write file!");
 }

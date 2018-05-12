@@ -7,11 +7,11 @@ use material::Material;
 pub struct Sphere {
     center: Vec3,
     radius: f32,
-    material: Box<Material + Sync>,
+    material: Box<Material + Send + Sync>,
 }
 
 impl Sphere {
-    pub fn new(center: Vec3, radius: f32, material: Box<Material + Sync>) -> Sphere {
+    pub fn new(center: Vec3, radius: f32, material: Box<Material + Send + Sync>) -> Sphere {
         Sphere {
             center,
             radius,
