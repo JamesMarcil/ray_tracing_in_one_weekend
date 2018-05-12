@@ -1,3 +1,4 @@
+extern crate clap;
 extern crate image;
 extern crate rand;
 extern crate rayon;
@@ -20,6 +21,7 @@ use hitable_list::HitableList;
 use sphere::Sphere;
 use material::{Dielectric, Lambertian, Metal};
 use rayon::prelude::*;
+use clap::{App, Arg};
 
 fn get_color(r: Ray, hitable: &Hitable, depth: i32) -> Vec3 {
     match hitable.hit(&r, 0.001, std::f32::MAX) {
@@ -40,6 +42,52 @@ fn get_color(r: Ray, hitable: &Hitable, depth: i32) -> Vec3 {
 }
 
 fn main() {
+    let arguments = App::new("Ray Tracing in One Weekend")
+        .version("0.1.0")
+        .author("James Marcil <james@jamesmarcil.com>")
+        .arg(
+            Arg::with_name("width")
+                .short("w")
+                .long("width")
+                .help("The width of the image in pixels")
+                .takes_value(true)
+                .default_value("200"),
+        )
+        .arg(
+            Arg::with_name("height")
+                .short("h")
+                .long("height")
+                .help("The height of the image in pixels")
+                .takes_value(true)
+                .default_value("100"),
+        )
+        .arg(
+            Arg::with_name("num_samples")
+                .short("n")
+                .long("num-samples")
+                .help("The number of samples per pixel")
+                .takes_value(true)
+                .default_value("10"),
+        )
+        .arg(
+            Arg::with_name("filename")
+                .short("f")
+                .long("filename")
+                .help("Path to store generated image")
+                .takes_value(true)
+                .default_value("out.png"),
+        )
+        .get_matches();
+
+    let nx = arguments.value_of("width").unwrap().parse().unwrap_or(200);
+    let ny = arguments.value_of("height").unwrap().parse().unwrap_or(100);
+    let num_samples = arguments
+        .value_of("num_samples")
+        .unwrap()
+        .parse()
+        .unwrap_or(10);
+    let filename = arguments.value_of("filename").unwrap();
+
     let mut elements: Vec<Box<Hitable + Sync>> = vec![];
 
     let material_one = Box::new(Lambertian::new(Vec3::new(0.5, 0.5, 0.5)));
@@ -114,10 +162,6 @@ fn main() {
 
     let world = HitableList::new(elements);
 
-    let nx = 1600;
-    let ny = 900;
-    let num_samples = 10;
-
     let look_from = Vec3::new(13.0, 2.0, 3.0);
     let look_at = Vec3::new(0.0, 0.0, 0.0);
     let up = Vec3::new(0.0, 1.0, 0.0);
@@ -175,6 +219,11 @@ fn main() {
         array
     });
 
-    image::save_buffer("out.png", &result, nx as u32, ny as u32, image::ColorType::RGB(8))
-        .expect("Failed to write file!");
+    image::save_buffer(
+        filename,
+        &result,
+        nx as u32,
+        ny as u32,
+        image::ColorType::RGB(8),
+    ).expect("Failed to write file!");
 }
